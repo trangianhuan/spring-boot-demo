@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit</title>
+</head>
+<body>
+<div class="container" id="main-content">
+    <div class="row d-flex justify-content-center">
+        <form style="min-width: 300px;" th:method="PUT" th:action="@{/users/{id}/edit(id=${user.get().id})}" th:object="${user}"
+              novalidate="novalidate">
+            <h5 class="text-center">User form</h5>
+
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <input class="form-control" type="text" placeholder="Contact name"
+                       th:field="*{name}" th:errorclass="field-error" />
+                <em th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></em>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-block btn-primary">
+                    <i class="fa fa-save"></i> update
+                </button>
+            </div>
+        </form>
+    </div>
+</div><!-- /.container -->
+</body>
+</html>

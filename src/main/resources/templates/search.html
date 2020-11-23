@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User search</title>
+</head>
+<body>
+    <form th:action="@{/users/search}" method="GET">
+        <input type="text" name="name" />
+        <button type="submit">Search</button>
+    </form>
+
+    <div>Result</div>
+    <div th:each="user,index : ${users}">
+        <div>name:</div>
+        <div th:text="${user.name}"></div>
+    </div>
+</body>
+</html>
