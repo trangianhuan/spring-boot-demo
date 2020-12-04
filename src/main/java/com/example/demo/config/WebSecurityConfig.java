@@ -1,8 +1,11 @@
 package com.example.demo.config;
 
+import com.example.demo.model.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,34 +19,46 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    UserDetailsService userDetailsService;
+
+    @Bean
+    public JwtRequestFilter jwtAuthenticationFilter() {
+        return new JwtRequestFilter();
+    }
+
+    @Bean(BeanIds.AUTHENTICATION_MANAGER)
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        // Get AuthenticationManager Bean
+        return super.authenticationManagerBean();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        // Password encoder, để Spring Security sử dụng mã hóa mật khẩu người dùng
         return new BCryptPasswordEncoder();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth)
+            throws Exception {
+        auth.userDetailsService(userDetailsService) // Cung cáp userservice cho spring security
+                .passwordEncoder(passwordEncoder()); // cung cấp password encoder
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .cors()
+                .and()
+                .csrf()
+                .disable()
                 .authorizeRequests()
-                .antMatchers("/register").permitAll()
-                .antMatchers("/").hasRole("MEMBER")
-                .antMatchers("/admin").hasRole("ADMIN")
-                .and()
-                .formLogin()
-                .loginPage("/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/")
-                .failureUrl("/login?error")
-                .and()
-                .exceptionHandling()
-                .accessDeniedPage("/403");
+                .antMatchers("/api/login").permitAll() // Cho phép tất cả mọi người truy cập vào 2 địa chỉ này
+                .anyRequest().authenticated(); // Tất cả các request khác đều cần phải xác thực mới được truy cập
+
+        // Thêm một lớp Filter kiểm tra jwt
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
     }
 }

@@ -17,8 +17,8 @@ public class User {
     private Integer id;
 
     @NotEmpty
-    @Column(name = "name")
-    private String name;
+    @Column(name = "username")
+    private String username;
 
     @Column(name = "email", unique = true)
     private String email;
